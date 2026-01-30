@@ -10,6 +10,7 @@
 
 import { getToolIcon } from '../utils/ToolUtils'
 import type { ClaudeEvent, PreToolUseEvent, PostToolUseEvent } from '../../shared/types'
+import { t } from '../locales/zh-CN'
 
 export class FeedManager {
   private feedEl: HTMLElement | null = null
@@ -144,7 +145,7 @@ export class FeedManager {
     item.innerHTML = `
       <div class="feed-item-header">
         <div class="feed-item-icon thinking-icon">🤔</div>
-        <div class="feed-item-title">Claude is thinking</div>
+        <div class="feed-item-title">${t('feed.thinking')}</div>
         <div class="thinking-dots"><span>.</span><span>.</span><span>.</span></div>
       </div>
     `
@@ -231,7 +232,7 @@ export class FeedManager {
         item.innerHTML = `
           <div class="feed-item-header">
             <div class="feed-item-icon">💬</div>
-            <div class="feed-item-title">You</div>
+            <div class="feed-item-title">${t('feed.you')}</div>
             <div class="feed-item-time">${new Date(event.timestamp).toLocaleTimeString()}</div>
           </div>
           <div class="feed-item-content prompt-text">${escapeHtml(promptText)}</div>
@@ -269,9 +270,9 @@ export class FeedManager {
         } else if (command) {
           preview = `<div class="feed-item-code">${escapeHtml(command)}</div>`
         } else if (pattern) {
-          preview = `<div class="feed-item-file">Pattern: ${escapeHtml(pattern)}</div>`
+          preview = `<div class="feed-item-file">${t('feed.pattern')}${escapeHtml(pattern)}</div>`
         } else if (query) {
-          preview = `<div class="feed-item-file">Query: ${escapeHtml(query.slice(0, 100))}</div>`
+          preview = `<div class="feed-item-file">${t('feed.query')}${escapeHtml(query.slice(0, 100))}</div>`
         }
 
         let details = ''
@@ -281,7 +282,7 @@ export class FeedManager {
             <div class="feed-item-details collapsed" id="details-${e.toolUseId}">
               <div class="feed-item-code">${escapeHtml(truncated)}</div>
             </div>
-            <div class="expand-toggle" data-target="details-${e.toolUseId}">▶ Show content</div>
+            <div class="expand-toggle" data-target="details-${e.toolUseId}">${t('feed.showContent')}</div>
           `
         }
 
@@ -304,7 +305,7 @@ export class FeedManager {
               <div class="feed-item-assistant-text ${isLong ? 'collapsed' : ''}" id="assistant-text-${e.toolUseId}">
                 ${textContent}
               </div>
-              ${isLong ? `<div class="expand-toggle" data-target="assistant-text-${e.toolUseId}">▶ Show more</div>` : ''}
+              ${isLong ? `<div class="expand-toggle" data-target="assistant-text-${e.toolUseId}">${t('feed.showMore')}</div>` : ''}
             `
           }
         }
@@ -402,10 +403,10 @@ export class FeedManager {
           item.innerHTML = `
             <div class="feed-item-header">
               <div class="feed-item-icon">🤖</div>
-              <div class="feed-item-title">Claude</div>
+              <div class="feed-item-title">${t('feed.claude')}</div>
               <div class="feed-item-time">${new Date(event.timestamp).toLocaleTimeString()}</div>
             </div>
-            <div class="feed-item-content assistant-text">${renderMarkdown(displayResponse)}${isLong ? '<span class="show-more">... [show more - Alt+E]</span>' : ''}</div>
+            <div class="feed-item-content assistant-text">${renderMarkdown(displayResponse)}${isLong ? `<span class="show-more">${t('feed.showMoreLink')}</span>` : ''}</div>
           `
           // Add click handler for "show more"
           if (isLong) {
@@ -425,7 +426,7 @@ export class FeedManager {
           item.innerHTML = `
             <div class="feed-item-header">
               <div class="feed-item-icon">🏁</div>
-              <div class="feed-item-title">Stopped</div>
+              <div class="feed-item-title">${t('feed.stopped')}</div>
               <div class="feed-item-time">${new Date(event.timestamp).toLocaleTimeString()}</div>
             </div>
           `
@@ -465,7 +466,7 @@ export class FeedManager {
         const details = document.getElementById(targetId)
         if (details) {
           const isCollapsed = details.classList.toggle('collapsed')
-          toggle.textContent = isCollapsed ? '▶ Show content' : '▼ Hide content'
+          toggle.textContent = isCollapsed ? t('feed.showContent') : t('feed.hideContent')
         }
       })
     })
@@ -514,14 +515,14 @@ export function formatTokens(tokens: number): string {
  */
 export function formatTimeAgo(timestamp: number): string {
   const seconds = Math.floor((Date.now() - timestamp) / 1000)
-  if (seconds < 30) return 'just now'
-  if (seconds < 60) return `${seconds}s ago`
+  if (seconds < 30) return t('time.justNow')
+  if (seconds < 60) return `${seconds}${t('time.secondsAgo')}`
   const minutes = Math.floor(seconds / 60)
-  if (minutes < 60) return `${minutes}m ago`
+  if (minutes < 60) return `${minutes}${t('time.minutesAgo')}`
   const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h ago`
+  if (hours < 24) return `${hours}${t('time.hoursAgo')}`
   const days = Math.floor(hours / 24)
-  return `${days}d ago`
+  return `${days}${t('time.daysAgo')}`
 }
 
 /**
