@@ -1,9 +1,4 @@
-/**
- * KeybindConfig - Editable keyboard shortcuts configuration
- *
- * Manages user-customizable keybindings with localStorage persistence.
- * Only certain bindings are editable (focus, voice) - session keys are fixed.
- */
+import { t } from '../locales/zh-CN'
 
 // ============================================================================
 // Types
@@ -38,8 +33,8 @@ export interface KeybindAction {
 const DEFAULT_KEYBIND_ACTIONS: KeybindAction[] = [
   {
     id: 'focus-toggle',
-    name: 'Toggle Focus',
-    description: 'Switch between Workshop (3D) and Activity Feed',
+    name: t('keybind.action.focus.name'),
+    description: t('keybind.action.focus.desc'),
     editable: true,
     defaults: [
       { key: 'Tab', modifier: 'none' },
@@ -49,8 +44,8 @@ const DEFAULT_KEYBIND_ACTIONS: KeybindAction[] = [
   },
   {
     id: 'voice-toggle',
-    name: 'Voice Input',
-    description: 'Start/stop voice recording',
+    name: t('keybind.action.voice.name'),
+    description: t('keybind.action.voice.desc'),
     editable: true,
     defaults: [
       { key: 'm', modifier: 'ctrl' },

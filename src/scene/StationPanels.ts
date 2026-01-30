@@ -8,6 +8,8 @@
 import * as THREE from 'three'
 import type { StationType } from '../../shared/types'
 
+import { t } from '../locales/zh-CN'
+
 export interface ToolHistoryItem {
   text: string // "npm test" or "config.ts"
   success: boolean
@@ -25,15 +27,15 @@ const STATION_CONFIG: Record<
   StationType,
   { name: string; color: string; icon: string }
 > = {
-  center: { name: 'CENTER', color: '#4ac8e8', icon: '' },
-  bookshelf: { name: 'LIBRARY', color: '#fbbf24', icon: '' },
-  desk: { name: 'DESK', color: '#4ade80', icon: '' },
-  workbench: { name: 'WORKBENCH', color: '#f97316', icon: '' },
-  terminal: { name: 'TERMINAL', color: '#22d3ee', icon: '' },
-  scanner: { name: 'SCANNER', color: '#60a5fa', icon: '' },
-  antenna: { name: 'ANTENNA', color: '#4ac8e8', icon: '' },
-  portal: { name: 'PORTAL', color: '#22d3d8', icon: '' },
-  taskboard: { name: 'TASKBOARD', color: '#fb923c', icon: '' },
+  center: { name: t('station.center'), color: '#4ac8e8', icon: '' },
+  bookshelf: { name: t('station.bookshelf'), color: '#fbbf24', icon: '' },
+  desk: { name: t('station.desk'), color: '#4ade80', icon: '' },
+  workbench: { name: t('station.workbench'), color: '#f97316', icon: '' },
+  terminal: { name: t('station.terminal'), color: '#22d3ee', icon: '' },
+  scanner: { name: t('station.scanner'), color: '#60a5fa', icon: '' },
+  antenna: { name: t('station.antenna'), color: '#4ac8e8', icon: '' },
+  portal: { name: t('station.portal'), color: '#22d3d8', icon: '' },
+  taskboard: { name: t('station.taskboard'), color: '#fb923c', icon: '' },
 }
 
 // Station positions (relative to zone center)
@@ -109,7 +111,7 @@ export class StationPanels {
     for (const [, panel] of zonePanels) {
       this.scene.remove(panel.sprite)
       panel.sprite.material.map?.dispose()
-      ;(panel.sprite.material as THREE.SpriteMaterial).dispose()
+        ; (panel.sprite.material as THREE.SpriteMaterial).dispose()
     }
 
     this.panels.delete(zoneId)
@@ -268,7 +270,7 @@ export class StationPanels {
     if (history.length === 0) {
       ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'
       ctx.font = '13px system-ui, -apple-system, sans-serif'
-      ctx.fillText('No activity yet', 20, startY + 8)
+      ctx.fillText(t('panel.noActivity'), 20, startY + 8)
     } else {
       ctx.font = '13px system-ui, -apple-system, sans-serif'
 
