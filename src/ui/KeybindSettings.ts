@@ -2,6 +2,7 @@
  * KeybindSettings - UI for editing keyboard shortcuts in settings modal
  */
 
+import { t } from '../locales/zh-CN'
 import {
   keybindManager,
   formatKeybind,
@@ -56,14 +57,14 @@ function renderKeybindSettings(): void {
           type="button"
           class="keybind-add"
           data-action-id="${action.id}"
-          title="Add another keybind"
+          title="${t('keybind.add')}"
         >+</button>
       </div>
       <button
         type="button"
         class="keybind-reset"
         data-action-id="${action.id}"
-        title="Reset to default"
+        title="${t('keybind.reset')}"
       >↺</button>
     </div>
   `).join('')
@@ -104,7 +105,7 @@ function handleKeybindClick(e: Event): void {
 
   // Update UI to show editing state
   target.classList.add('editing')
-  target.textContent = 'Press key...'
+  target.textContent = t('keybind.pressKey')
 }
 
 /**
@@ -121,7 +122,7 @@ function handleAddKeybind(e: Event): void {
   editingElement = target
 
   target.classList.add('editing')
-  target.textContent = 'Press key...'
+  target.textContent = t('keybind.pressKey')
 }
 
 /**

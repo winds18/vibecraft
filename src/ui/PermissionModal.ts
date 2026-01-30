@@ -5,6 +5,7 @@
  * --dangerously-skip-permissions and need user approval for tools.
  */
 
+import { t } from '../locales/zh-CN'
 import { soundManager } from '../audio'
 import { escapeHtml } from './FeedManager'
 import type { WorkshopScene } from '../scene/WorkshopScene'

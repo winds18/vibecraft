@@ -9,6 +9,7 @@ import { soundManager } from '../audio'
 import { escapeHtml } from './FeedManager'
 import type { WorkshopScene } from '../scene/WorkshopScene'
 import type { AttentionSystem } from '../systems/AttentionSystem'
+import { t } from '../locales/zh-CN'
 
 // ============================================================================
 // Types
@@ -112,8 +113,8 @@ export function showQuestionModal(data: QuestionData): void {
   const q = data.questions[0]
   if (!q) return
 
-  if (badge) badge.textContent = q.header || 'Question'
-  if (header) header.textContent = 'Claude needs input'
+  if (badge) badge.textContent = q.header || t('question.header.default')
+  if (header) header.textContent = t('question.header.claude')
   if (text) text.textContent = q.question
 
   // Clear previous options
