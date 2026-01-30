@@ -23,11 +23,12 @@ import {
 } from '../shared/types'
 import { soundManager } from './audio'
 
-// Expose for console testing (can remove in production)
-;(window as any).soundManager = soundManager
+  // Expose for console testing (can remove in production)
+  ; (window as any).soundManager = soundManager
 import { setupVoiceControl, type VoiceState } from './ui/VoiceControl'
 import { getToolIcon } from './utils/ToolUtils'
 import { AttentionSystem } from './systems/AttentionSystem'
+import { t } from './locales/zh-CN'
 import { TimelineManager } from './ui/TimelineManager'
 import { FeedManager, formatTokens, formatTimeAgo, escapeHtml } from './ui/FeedManager'
 import { ContextMenu, type ContextMenuContext } from './ui/ContextMenu'
@@ -156,8 +157,8 @@ const state: AppState = {
   historyDraft: '',
 }
 
-// Expose for console testing (can remove in production)
-;(window as any).state = state
+  // Expose for console testing (can remove in production)
+  ; (window as any).state = state
 
 // Track pending zone hints for direction-aware placement
 // Maps managed session name → click position (used when zone is created)
@@ -245,8 +246,8 @@ function renderManagedSessions(): void {
     }
     const detailClass = session.status === 'working' ? 'session-detail working'
       : session.status === 'waiting' ? 'session-detail attention'
-      : needsAttention ? 'session-detail attention'
-      : 'session-detail'
+        : needsAttention ? 'session-detail attention'
+          : 'session-detail'
 
     // Get last prompt for this session (via claudeSessionId)
     const lastPrompt = session.claudeSessionId ? state.lastPrompts.get(session.claudeSessionId) : null
@@ -1217,16 +1218,16 @@ function updateKeybindHelper(mode: CameraMode): void {
   if (modeLabel && modeDesc) {
     switch (mode) {
       case 'focused':
-        modeLabel.textContent = 'Focused'
-        modeDesc.textContent = state.focusedSessionId?.slice(0, 8) || 'none'
+        modeLabel.textContent = t('mode.focused')
+        modeDesc.textContent = state.focusedSessionId?.slice(0, 8) || t('mode.desc.none')
         break
       case 'overview':
-        modeLabel.textContent = 'Overview'
-        modeDesc.textContent = 'all sessions'
+        modeLabel.textContent = t('mode.overview')
+        modeDesc.textContent = t('mode.desc.all')
         break
       case 'follow-active':
-        modeLabel.textContent = 'Follow'
-        modeDesc.textContent = 'auto-tracking'
+        modeLabel.textContent = t('mode.follow')
+        modeDesc.textContent = t('mode.desc.auto')
         break
     }
   }
@@ -1271,7 +1272,7 @@ function setupDevPanel(): void {
     // --- Idle Behaviors Section ---
     const idleHeader = document.createElement('div')
     idleHeader.className = 'dev-section-header'
-    idleHeader.textContent = 'Idle'
+    idleHeader.textContent = t('dev.idle')
     animationsContainer.appendChild(idleHeader)
 
     const behaviors = claude.getIdleBehaviorNames()
@@ -1294,7 +1295,7 @@ function setupDevPanel(): void {
     // --- Working Behaviors Section ---
     const workingHeader = document.createElement('div')
     workingHeader.className = 'dev-section-header'
-    workingHeader.textContent = 'Working (by station)'
+    workingHeader.textContent = t('dev.working')
     animationsContainer.appendChild(workingHeader)
 
     const stations = claude.getWorkingBehaviorStations()
@@ -1318,7 +1319,7 @@ function setupDevPanel(): void {
     // --- Stop Button ---
     const stopBtn = document.createElement('button')
     stopBtn.className = 'dev-anim-btn dev-anim-btn-stop'
-    stopBtn.textContent = '⏹ Stop → Idle'
+    stopBtn.textContent = t('dev.stop')
     stopBtn.addEventListener('click', () => {
       const target = getTargetClaude()
       if (target) {
@@ -1822,8 +1823,8 @@ function handleEvent(event: ClaudeEvent) {
         }
       }
 
-      updateActivity(`Using ${e.tool}...`)
-      updateStatus(true, 'Working')
+      updateActivity(t('state.using').replace('${tool}', e.tool))
+      updateStatus(true, t('state.working' as any) || 'Working')
 
       // Track file access
       const filePath = (e.toolInput as { file_path?: string }).file_path
@@ -1846,7 +1847,7 @@ function handleEvent(event: ClaudeEvent) {
       }
 
       updateStats()
-      updateActivity(e.success ? `${e.tool} complete` : `${e.tool} failed`)
+      updateActivity(e.success ? t('state.complete').replace('${tool}', e.tool) : t('state.failed').replace('${tool}', e.tool))
       break
     }
 
@@ -1856,8 +1857,8 @@ function handleEvent(event: ClaudeEvent) {
 
       // Update UI badge (zone attention set by zoneHandlers)
       updateAttentionBadge()
-      updateActivity('Idle')
-      updateStatus(true, 'Ready')
+      updateActivity(t('state.idle'))
+      updateStatus(true, t('state.ready'))
       break
     }
 
@@ -1875,8 +1876,8 @@ function handleEvent(event: ClaudeEvent) {
 
       // Update UI badge (zone attention cleared by zoneHandlers)
       updateAttentionBadge()
-      updateActivity('Processing prompt...')
-      updateStatus(true, 'Thinking')
+      updateActivity(t('state.processing'))
+      updateStatus(true, t('state.thinking'))
       break
     }
 
@@ -1885,7 +1886,7 @@ function handleEvent(event: ClaudeEvent) {
       session.stats.toolsUsed = 0
       session.stats.filesTouched.clear()
       updateStats()
-      updateActivity('Session started')
+      updateActivity(t('notification.sessionStarted' as any) || 'Session started')
       break
 
     case 'notification':
@@ -1922,7 +1923,7 @@ async function fetchConfig() {
  */
 async function interruptSession(sessionName: string): Promise<void> {
   // Show toast immediately
-  toast.info(`Interrupt sent to ${sessionName}`, {
+  toast.info(t('toast.interruptSent').replace('${name}', sessionName), {
     icon: '⛔',
     duration: 2500,
     html: true,
@@ -1933,13 +1934,13 @@ async function interruptSession(sessionName: string): Promise<void> {
     const data = await response.json()
 
     if (!data.ok) {
-      toast.error(data.error || 'Interrupt failed', {
+      toast.error(data.error || t('toast.interruptFailed'), {
         icon: '❌',
         duration: 3000,
       })
     }
   } catch (error) {
-    toast.error('Connection error', {
+    toast.error(t('toast.connectionError'), {
       icon: '❌',
       duration: 3000,
     })
@@ -2035,7 +2036,7 @@ function setupPromptForm() {
   if (cancelBtn) {
     cancelBtn.addEventListener('click', async () => {
       if (status) {
-        status.textContent = 'Cancelling...'
+        status.textContent = t('state.cancelling')
         status.className = ''
       }
       try {
@@ -2043,7 +2044,7 @@ function setupPromptForm() {
         const data = await response.json()
         if (status) {
           if (data.ok) {
-            status.textContent = 'Cancelled!'
+            status.textContent = t('state.cancelled')
             status.className = 'success'
           } else {
             status.textContent = data.error || 'Cancel failed'
@@ -2223,7 +2224,7 @@ function setupTerminalToggle() {
         output.textContent = `Error: ${data.error}`
       }
     } catch (e) {
-      output.textContent = 'Failed to connect to server'
+      output.textContent = t('voice.error.connectionFailed') // Or similar connection error key
     }
   }
 }
@@ -2418,7 +2419,7 @@ function setupSettingsModal(): void {
     const newPort = parseInt(portInput.value, 10)
     if (newPort && newPort > 0 && newPort <= 65535 && newPort !== AGENT_PORT) {
       localStorage.setItem('vibecraft-agent-port', String(newPort))
-      if (confirm(`Port changed to ${newPort}. Reload page to connect to new port?`)) {
+      if (confirm(`端口已更改为 ${newPort}。是否刷新页面并在新端口上连接？`)) {
         window.location.reload()
       }
     }
@@ -2751,8 +2752,8 @@ function init() {
           // Map managed session status to zone status
           const zoneStatus = session.status === 'working' ? 'working'
             : session.status === 'waiting' ? 'waiting'
-            : session.status === 'offline' ? 'offline'
-            : 'idle'
+              : session.status === 'offline' ? 'offline'
+                : 'idle'
           state.scene.setZoneStatus(session.claudeSessionId, zoneStatus)
         }
       }
@@ -3042,5 +3043,5 @@ function cleanup() {
 window.addEventListener('load', init)
 window.addEventListener('beforeunload', cleanup)
 
-// Export for debugging
-;(window as unknown as { vibecraft: AppState }).vibecraft = state
+  // Export for debugging
+  ; (window as unknown as { vibecraft: AppState }).vibecraft = state
