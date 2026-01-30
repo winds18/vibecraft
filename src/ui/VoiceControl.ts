@@ -16,6 +16,7 @@ import { VoiceInput } from '../audio/VoiceInput'
 import { soundManager } from '../audio/SoundManager'
 import type { EventClient } from '../events/EventClient'
 import { keybindManager } from './KeybindConfig'
+import { t } from '../locales/zh-CN'
 
 /**
  * Check if we're running on the hosted vibecraft.sh site
@@ -129,7 +130,7 @@ export function setupVoiceControl(deps: VoiceControlDeps): VoiceState | null {
         if (transcriptEl) transcriptEl.classList.add('visible')
         if (voiceControlEl) voiceControlEl.classList.add('recording')
         if (transcriptLabelEl) {
-          transcriptLabelEl.innerHTML = '<span class="recording-dot"></span> Listening...'
+          transcriptLabelEl.innerHTML = `<span class="recording-dot"></span> ${t('voice.listening')}`
         }
         break
       case 'error':
@@ -137,9 +138,9 @@ export function setupVoiceControl(deps: VoiceControlDeps): VoiceState | null {
         voiceBars?.forEach(bar => { bar.style.height = '8px' })
         if (transcriptEl && transcriptTextEl) {
           transcriptEl.classList.add('visible')
-          transcriptTextEl.textContent = error || 'Unknown error'
+          transcriptTextEl.textContent = error || t('voice.error.unknown')
           if (transcriptLabelEl) {
-            transcriptLabelEl.innerHTML = '⚠️ Error'
+            transcriptLabelEl.innerHTML = t('voice.error.title')
           }
           setTimeout(() => {
             if (status === 'error') {
@@ -226,9 +227,9 @@ export function setupVoiceControl(deps: VoiceControlDeps): VoiceState | null {
 
         if (!transcript && transcriptEl && transcriptTextEl) {
           transcriptEl.classList.add('visible')
-          transcriptTextEl.textContent = 'No speech detected'
+          transcriptTextEl.textContent = t('voice.noSpeech')
           if (transcriptLabelEl) {
-            transcriptLabelEl.innerHTML = 'ℹ️ Info'
+            transcriptLabelEl.innerHTML = t('voice.info')
           }
           setTimeout(() => {
             transcriptEl.classList.remove('visible')
@@ -261,7 +262,7 @@ export function setupVoiceControl(deps: VoiceControlDeps): VoiceState | null {
       } else if (data.type === 'voice_transcript') {
         handleTranscript(data)
       } else if (data.type === 'voice_error') {
-        setError(data.error || 'Transcription error')
+        setError(data.error || t('voice.error.transcription'))
       }
     } catch {
       // Ignore non-JSON messages
@@ -285,9 +286,9 @@ export function setupVoiceControl(deps: VoiceControlDeps): VoiceState | null {
     // Update transcript display (floating label)
     if (transcriptTextEl) {
       const displayText = accumulatedTranscript + (currentInterim ? (accumulatedTranscript ? ' ' : '') + currentInterim : '')
-      transcriptTextEl.textContent = displayText || 'Listening...'
+      transcriptTextEl.textContent = displayText || t('voice.listening')
       if (transcriptLabelEl) {
-        transcriptLabelEl.textContent = data.is_final ? 'Transcript:' : 'Listening...'
+        transcriptLabelEl.textContent = data.is_final ? t('voice.transcript') : t('voice.listening')
       }
     }
 
@@ -320,7 +321,7 @@ export function setupVoiceControl(deps: VoiceControlDeps): VoiceState | null {
         cloudVoiceSocket = new WebSocket(getCloudVoiceUrl())
 
         await new Promise<void>((resolve, reject) => {
-          const timeout = setTimeout(() => reject(new Error('Connection timeout')), 5000)
+          const timeout = setTimeout(() => reject(new Error(t('voice.error.timeout'))), 5000)
 
           cloudVoiceSocket!.onopen = () => {
             clearTimeout(timeout)
@@ -330,7 +331,7 @@ export function setupVoiceControl(deps: VoiceControlDeps): VoiceState | null {
 
           cloudVoiceSocket!.onerror = () => {
             clearTimeout(timeout)
-            reject(new Error('Failed to connect to voice service'))
+            reject(new Error(t('voice.error.connectionFailed')))
           }
 
           cloudVoiceSocket!.onmessage = handleCloudVoiceMessage
@@ -342,14 +343,14 @@ export function setupVoiceControl(deps: VoiceControlDeps): VoiceState | null {
           }
         })
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Voice connection failed')
+        setError(e instanceof Error ? e.message : t('voice.error.connectionFailed'))
         return false
       }
     } else {
       // Local mode - use EventClient socket
       const socket = client.socket
       if (!socket || socket.readyState !== WebSocket.OPEN) {
-        setError('Not connected to server')
+        setError(t('voice.error.notConnected'))
         return false
       }
       socket.send(JSON.stringify({ type: 'voice_start' }))
@@ -357,7 +358,7 @@ export function setupVoiceControl(deps: VoiceControlDeps): VoiceState | null {
 
     connectionTimeout = window.setTimeout(() => {
       if (status === 'connecting') {
-        setError('Transcription service timeout')
+        setError(t('voice.error.timeout'))
       }
     }, 5000)
 
@@ -373,7 +374,7 @@ export function setupVoiceControl(deps: VoiceControlDeps): VoiceState | null {
         clearTimeout(connectionTimeout)
         connectionTimeout = null
       }
-      setError('Microphone access denied')
+      setError(t('voice.error.micDenied'))
       if (voiceSocket?.readyState === WebSocket.OPEN) {
         voiceSocket.send(JSON.stringify({ type: 'voice_stop' }))
       }
@@ -474,12 +475,12 @@ export function setupVoiceControl(deps: VoiceControlDeps): VoiceState | null {
       syncState()
     } else if (data.type === 'voice_error') {
       const payload = data.payload as { error?: string }
-      const errorMsg = payload?.error || 'Transcription error'
+      const errorMsg = payload?.error || t('voice.error.transcription')
 
       if (errorMsg.includes('not configured')) {
-        setError('Voice not configured (missing API key)')
+        setError(t('voice.error.notConfigured'))
       } else if (errorMsg.includes('rate') || errorMsg.includes('limit')) {
-        setError('Rate limit exceeded')
+        setError(t('voice.error.rateLimit'))
       } else {
         setError(errorMsg)
       }

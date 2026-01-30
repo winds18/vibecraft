@@ -8,6 +8,8 @@
  * - Reusable for different contexts (create zone, delete zone, etc.)
  */
 
+import { t } from '../locales/zh-CN'
+
 export interface ContextMenuItem {
   key: string           // Keyboard shortcut (e.g., 'C', 'D')
   label: string         // Display label (e.g., 'Create zone')
@@ -44,7 +46,7 @@ export class ContextMenu {
     this.element.className = 'context-menu'
     this.element.innerHTML = `
       <div class="context-menu-items"></div>
-      <div class="context-menu-hint">Move elsewhere to dismiss</div>
+      <div class="context-menu-hint">${t('context.hint.dismiss')}</div>
     `
     document.body.appendChild(this.element)
 

@@ -5,25 +5,27 @@
  * Commands are sent directly to Claude Code via tmux.
  */
 
+import { t } from '../locales/zh-CN'
+
 // Known Claude Code slash commands
 export const SLASH_COMMANDS = [
-  { command: '/clear', description: 'Clear conversation history' },
-  { command: '/compact', description: 'Compact conversation to save context' },
-  { command: '/config', description: 'View/edit configuration' },
-  { command: '/cost', description: 'Show token usage and cost' },
-  { command: '/doctor', description: 'Run diagnostics' },
-  { command: '/help', description: 'Show help' },
-  { command: '/init', description: 'Initialize CLAUDE.md' },
-  { command: '/login', description: 'Login to Anthropic' },
-  { command: '/logout', description: 'Logout from Anthropic' },
-  { command: '/memory', description: 'Edit CLAUDE.md memory' },
-  { command: '/model', description: 'Switch model' },
-  { command: '/permissions', description: 'View/edit permissions' },
-  { command: '/pr-comments', description: 'View PR comments' },
-  { command: '/review', description: 'Request code review' },
-  { command: '/status', description: 'Show status' },
-  { command: '/terminal-setup', description: 'Setup terminal integration' },
-  { command: '/vim', description: 'Toggle vim mode' },
+  { command: '/clear', description: t('slash.clear.desc') },
+  { command: '/compact', description: t('slash.compact.desc') },
+  { command: '/config', description: t('slash.config.desc') },
+  { command: '/cost', description: t('slash.cost.desc') },
+  { command: '/doctor', description: t('slash.doctor.desc') },
+  { command: '/help', description: t('slash.help.desc') },
+  { command: '/init', description: t('slash.init.desc') },
+  { command: '/login', description: t('slash.login.desc') },
+  { command: '/logout', description: t('slash.logout.desc') },
+  { command: '/memory', description: t('slash.memory.desc') },
+  { command: '/model', description: t('slash.model.desc') },
+  { command: '/permissions', description: t('slash.permissions.desc') },
+  { command: '/pr-comments', description: t('slash.prComments.desc') },
+  { command: '/review', description: t('slash.review.desc') },
+  { command: '/status', description: t('slash.status.desc') },
+  { command: '/terminal-setup', description: t('slash.terminalSetup.desc') },
+  { command: '/vim', description: t('slash.vim.desc') },
 ] as const
 
 export type SlashCommand = typeof SLASH_COMMANDS[number]

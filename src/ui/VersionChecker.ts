@@ -1,10 +1,4 @@
-/**
- * VersionChecker - Checks for updates and shows a banner if outdated
- *
- * Compares the local server version (from /health) with the latest version
- * (from version.json on vibecraft.sh). Shows a non-intrusive banner if
- * an update is available.
- */
+import { t } from '../locales/zh-CN'
 
 interface VersionInfo {
   latest: string
@@ -118,10 +112,10 @@ function showUpdateBanner(
   banner.className = isUnsupported ? 'version-banner version-banner-critical' : 'version-banner'
 
   const icon = isUnsupported ? '⚠️' : '✨'
-  const title = isUnsupported ? 'Update Required' : 'Update Available'
+  const title = isUnsupported ? t('version.required') : t('version.available')
   const message = isUnsupported
-    ? `Your version (${currentVersion}) is no longer supported.`
-    : `A new version is available: ${versionInfo.latest} (you have ${currentVersion})`
+    ? t('version.unsupported').replace('${version}', currentVersion)
+    : t('version.newVersion').replace('${latest}', versionInfo.latest).replace('${version}', currentVersion)
 
   banner.innerHTML = `
     <div class="version-banner-content">
@@ -130,8 +124,8 @@ function showUpdateBanner(
         <strong>${title}</strong> - ${message}
       </span>
       <code class="version-banner-command">${versionInfo.updateCommand}</code>
-      <a href="${versionInfo.releaseUrl}" target="_blank" class="version-banner-link">Release Notes</a>
-      <button class="version-banner-dismiss" title="Dismiss">×</button>
+      <a href="${versionInfo.releaseUrl}" target="_blank" class="version-banner-link">${t('version.releaseNotes')}</a>
+      <button class="version-banner-dismiss" title="${t('version.dismiss')}">×</button>
     </div>
   `
 
@@ -257,7 +251,7 @@ function showUpdateBanner(
   commandEl?.addEventListener('click', () => {
     navigator.clipboard.writeText(versionInfo.updateCommand)
     const originalText = commandEl.textContent
-    commandEl.textContent = 'Copied!'
+    commandEl.textContent = t('version.copied')
     setTimeout(() => {
       commandEl.textContent = originalText
     }, 1500)

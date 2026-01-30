@@ -1,477 +1,476 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Watch and Manage Claude Code in 3D!" />
-    <meta name="theme-color" content="#0f172a" />
-    <title>Vibecraft - Watch and Manage Claude Code in 3D!</title>
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="在 3D 空间中监控和管理 Claude Code！" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>Vibecraft - 在 3D 空间中监控和管理 Claude Code！</title>
 
-    <!-- Open Graph / Social -->
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Vibecraft" />
-    <meta property="og:title" content="Vibecraft - Watch and Manage Claude Code in 3D!" />
-    <meta property="og:description" content="Watch and Manage Claude Code in 3D!" />
-    <meta property="og:image" content="https://vibecraft.sh/og-image.png" />
-    <meta property="og:url" content="https://vibecraft.sh" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Vibecraft - Watch and Manage Claude Code in 3D!" />
-    <meta name="twitter:description" content="Watch and Manage Claude Code in 3D!" />
-    <meta name="twitter:image" content="https://vibecraft.sh/og-image.png" />
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/logo.svg" />
 
-    <!-- Analytics -->
-    <script src="https://cdn.amplitude.com/script/3b78e993d3c7ddad9fb9ae615cc094b6.js"></script>
-    <script>window.amplitude.init('3b78e993d3c7ddad9fb9ae615cc094b6', {"fetchRemoteConfig":true,"autocapture":{"attribution":true,"fileDownloads":true,"formInteractions":true,"pageViews":true,"sessions":true,"elementInteractions":true,"networkTracking":true,"webVitals":true,"frustrationInteractions":true}});</script>
-  </head>
-  <body>
-    <div id="app">
-      <!-- Left: 3D Scene -->
-      <div id="scene-panel">
-        <div id="canvas-container"></div>
+  <!-- Open Graph / Social -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Vibecraft" />
+  <meta property="og:title" content="Vibecraft - 在 3D 空间中监控和管理 Claude Code！" />
+  <meta property="og:description" content="在 3D 空间中监控和管理 Claude Code！" />
+  <meta property="og:image" content="https://vibecraft.sh/og-image.png" />
+  <meta property="og:url" content="https://vibecraft.sh" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Vibecraft - 在 3D 空间中监控和管理 Claude Code！" />
+  <meta name="twitter:description" content="在 3D 空间中监控和管理 Claude Code！" />
+  <meta name="twitter:image" content="https://vibecraft.sh/og-image.png" />
 
-        <!-- Scene HUD -->
-        <div id="scene-hud">
-          <div class="scene-badge unified-hud">
-            <div id="status-dot"></div>
-            <span id="username" class="hud-user">...</span>
-            <span id="status-text"></span>
-            <span class="hud-sep">|</span>
-            <span id="token-counter" class="hud-tokens" title="Tokens used this session">⚡ 0 tok</span>
-            <span class="hud-sep">|</span>
-            <button id="settings-btn" class="hud-btn" title="Settings">⚙️</button>
-            <!-- Debug: FPS counter (uncomment to enable)
+  <!-- Analytics -->
+  <script src="https://cdn.amplitude.com/script/3b78e993d3c7ddad9fb9ae615cc094b6.js"></script>
+  <script>window.amplitude.init('3b78e993d3c7ddad9fb9ae615cc094b6', { "fetchRemoteConfig": true, "autocapture": { "attribution": true, "fileDownloads": true, "formInteractions": true, "pageViews": true, "sessions": true, "elementInteractions": true, "networkTracking": true, "webVitals": true, "frustrationInteractions": true } });</script>
+</head>
+
+<body>
+  <div id="app">
+    <!-- Left: 3D Scene -->
+    <div id="scene-panel">
+      <div id="canvas-container"></div>
+
+      <!-- Scene HUD -->
+      <div id="scene-hud">
+        <div class="scene-badge unified-hud">
+          <div id="status-dot"></div>
+          <span id="username" class="hud-user">...</span>
+          <span id="status-text"></span>
+          <span class="hud-sep">|</span>
+          <span id="token-counter" class="hud-tokens" title="本次会话已消耗 Token">⚡ 0 tok</span>
+          <span class="hud-sep">|</span>
+          <button id="settings-btn" class="hud-btn" title="设置">⚙️</button>
+          <!-- Debug: FPS counter (uncomment to enable)
             <span class="hud-sep">|</span>
             <span id="fps" class="hud-fps">-- FPS</span>
             -->
-          </div>
         </div>
-
-        <!-- Dev Panel (animations test) - hidden by default -->
-        <div id="dev-panel" class="hidden">
-          <div class="dev-header">🎬 Animations</div>
-          <div id="dev-animations"></div>
-        </div>
-
-        <!-- Keybind Helper (bottom-left) -->
-        <div id="keybind-helper">
-          <div class="keybind-list">
-            <span class="keybind"><kbd>1-6</kbd> sessions · <kbd>`</kbd><kbd>0</kbd> all · <kbd>Tab</kbd> focus · <kbd>D</kbd> draw</span>
-          </div>
-        </div>
-
-        <!-- Voice Control (center bottom) -->
-        <div id="voice-control" class="voice-control">
-          <!-- Idle state: mic button with hint -->
-          <div class="voice-idle">
-            <button type="button" id="voice-btn" class="voice-trigger" title="Start voice input">🎤</button>
-            <span class="voice-hint"><kbd>Ctrl</kbd><kbd>M</kbd></span>
-          </div>
-          <!-- Recording state: bars + dot -->
-          <div class="voice-recording">
-            <div class="voice-bars">
-              <div class="voice-bar" data-bar="0"></div>
-              <div class="voice-bar" data-bar="1"></div>
-              <div class="voice-bar" data-bar="2"></div>
-              <div class="voice-bar" data-bar="3"></div>
-              <div class="voice-bar" data-bar="4"></div>
-              <div class="voice-bar" data-bar="5"></div>
-              <div class="voice-bar" data-bar="6"></div>
-              <div class="voice-bar" data-bar="7"></div>
-              <div class="voice-bar" data-bar="8"></div>
-              <div class="voice-bar" data-bar="9"></div>
-            </div>
-            <div class="voice-status-row">
-              <div class="voice-record-dot"></div>
-              <span class="voice-send-hint"><kbd>Enter</kbd> to send</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Draw Mode UI (bottom right of scene) -->
-        <div id="draw-indicator">
-          <span class="draw-mode-label">DRAW MODE</span>
-          <span class="draw-mode-hint"><kbd>D</kbd> exit · <kbd>X</kbd> clear · <kbd>Q</kbd><kbd>E</kbd> brush · <kbd>R</kbd> 3D</span>
-        </div>
-        <div id="draw-palette">
-          <!-- Populated by DrawMode.ts -->
-        </div>
-
       </div>
 
-      <!-- Right: Activity Feed -->
-      <div id="feed-panel">
-        <div id="feed-header">
-          <h2>Vibecraft <span class="muted">(vibecraft.sh)</span></h2>
-          <div class="feed-header-right">
-            <span id="attention-badge" class="attention-badge hidden">0</span>
-            <button id="about-btn" class="feed-about-btn" title="About Vibecraft">?</button>
+      <!-- Dev Panel (animations test) - hidden by default -->
+      <div id="dev-panel" class="hidden">
+        <div class="dev-header">🎬 动画测试 (Animations)</div>
+        <div id="dev-animations"></div>
+      </div>
+
+      <!-- Keybind Helper (bottom-left) -->
+      <div id="keybind-helper">
+        <div class="keybind-list">
+          <span class="keybind"><kbd>1-6</kbd> 会话 · <kbd>`</kbd><kbd>0</kbd> 总览 · <kbd>Tab</kbd> 聚焦 · <kbd>D</kbd>
+            涂装</span>
+        </div>
+      </div>
+
+      <!-- Voice Control (center bottom) -->
+      <div id="voice-control" class="voice-control">
+        <!-- Idle state: mic button with hint -->
+        <div class="voice-idle">
+          <button type="button" id="voice-btn" class="voice-trigger" title="开始语音输入">🎤</button>
+          <span class="voice-hint"><kbd>Ctrl</kbd><kbd>M</kbd></span>
+        </div>
+        <!-- Recording state: bars + dot -->
+        <div class="voice-recording">
+          <div class="voice-bars">
+            <div class="voice-bar" data-bar="0"></div>
+            <div class="voice-bar" data-bar="1"></div>
+            <div class="voice-bar" data-bar="2"></div>
+            <div class="voice-bar" data-bar="3"></div>
+            <div class="voice-bar" data-bar="4"></div>
+            <div class="voice-bar" data-bar="5"></div>
+            <div class="voice-bar" data-bar="6"></div>
+            <div class="voice-bar" data-bar="7"></div>
+            <div class="voice-bar" data-bar="8"></div>
+            <div class="voice-bar" data-bar="9"></div>
+          </div>
+          <div class="voice-status-row">
+            <div class="voice-record-dot"></div>
+            <span class="voice-send-hint"><kbd>Enter</kbd> 发送</span>
           </div>
         </div>
+      </div>
 
-        <!-- Session Management -->
-        <div id="sessions-panel">
-          <div id="sessions-list">
-            <div class="session-item all-sessions active" data-session="all">
-              <div class="session-hotkey">0</div>
-              <div class="session-icon">📋</div>
-              <div class="session-info">
-                <div class="session-name">All Sessions</div>
-                <div class="session-detail" id="all-sessions-count">No active sessions</div>
-              </div>
-            </div>
-            <div id="managed-sessions"></div>
-          </div>
+      <!-- Draw Mode UI (bottom right of scene) -->
+      <div id="draw-indicator">
+        <span class="draw-mode-label">涂装模式 (DRAW MODE)</span>
+        <span class="draw-mode-hint"><kbd>D</kbd> 退出 · <kbd>X</kbd> 清除 · <kbd>Q</kbd><kbd>E</kbd> 笔触 · <kbd>R</kbd>
+          3D</span>
+      </div>
+      <div id="draw-palette">
+        <!-- Populated by DrawMode.ts -->
+      </div>
+
+    </div>
+
+    <!-- Right: Activity Feed -->
+    <div id="feed-panel">
+      <div id="feed-header">
+        <h2>Vibecraft <span class="muted">(vibecraft.sh)</span></h2>
+        <div class="feed-header-right">
+          <span id="attention-badge" class="attention-badge hidden">0</span>
+          <button id="about-btn" class="feed-about-btn" title="关于 Vibecraft">?</button>
         </div>
+      </div>
 
-        <!-- Terminal output panel (hidden by default) -->
-        <div id="terminal-panel" class="hidden">
-          <div id="terminal-output"></div>
-        </div>
-
-        <div id="activity-feed-wrapper">
-          <div id="activity-feed">
-            <div id="feed-empty">
-              <div id="feed-empty-icon">🛠️</div>
-              <h3>Waiting for activity</h3>
-              <p>Start using Claude Code to see events here</p>
+      <!-- Session Management -->
+      <div id="sessions-panel">
+        <div id="sessions-list">
+          <div class="session-item all-sessions active" data-session="all">
+            <div class="session-hotkey">0</div>
+            <div class="session-icon">📋</div>
+            <div class="session-info">
+              <div class="session-name">所有会话</div>
+              <div class="session-detail" id="all-sessions-count">暂无活动会话</div>
             </div>
           </div>
-          <button id="feed-scroll-bottom">↓ Jump to latest</button>
+          <div id="managed-sessions"></div>
         </div>
+      </div>
 
-        <div id="prompt-container">
-          <div id="voice-transcript">
-            <div class="transcript-label"><span class="recording-dot"></span> Listening...</div>
-            <div id="voice-transcript-text"></div>
+      <!-- Terminal output panel (hidden by default) -->
+      <div id="terminal-panel" class="hidden">
+        <div id="terminal-output"></div>
+      </div>
+
+      <div id="activity-feed-wrapper">
+        <div id="activity-feed">
+          <div id="feed-empty">
+            <div id="feed-empty-icon">🛠️</div>
+            <h3>等待活动中...</h3>
+            <p>开始使用 Claude Code 后，相关事件将在此显示</p>
           </div>
-          <form id="prompt-form">
-            <div class="input-wrapper">
-              <textarea id="prompt-input" placeholder="Prompt..." autocomplete="off" rows="1"></textarea>
-            </div>
-            <button type="submit" id="prompt-submit"><span class="btn-icon">↗</span> Send</button>
-            <button type="button" id="prompt-cancel"><span class="btn-icon">◼</span> Stop</button>
-          </form>
-          <div id="prompt-options">
-            <span id="prompt-target"></span>
-            <span id="prompt-status"></span>
+        </div>
+        <button id="feed-scroll-bottom">↓ 跳转至最新</button>
+      </div>
+
+      <div id="prompt-container">
+        <div id="voice-transcript">
+          <div class="transcript-label"><span class="recording-dot"></span> ${t('voice.listening')}</div>
+          <div id="voice-transcript-text"></div>
+        </div>
+        <form id="prompt-form">
+          <div class="input-wrapper">
+            <textarea id="prompt-input" placeholder="输入指令 (Prompt)..." autocomplete="off" rows="1"></textarea>
           </div>
+          <button type="submit" id="prompt-submit"><span class="btn-icon">↗</span> 发送</button>
+          <button type="button" id="prompt-cancel"><span class="btn-icon">◼</span> 停止</button>
+        </form>
+        <div id="prompt-options">
+          <span id="prompt-target"></span>
+          <span id="prompt-status"></span>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- New Session Modal -->
-    <div id="new-session-modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>New Zone</h3>
-        </div>
+  <!-- New Session Modal -->
+  <div id="new-session-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>新建区域 (New Zone)</h3>
+      </div>
 
-        <div class="modal-field">
-          <label for="session-cwd-input">Directory</label>
-          <input type="text" id="session-cwd-input" placeholder="e.g. /home/user/my-project" autocomplete="off" />
-          <div class="field-hint">Default: <code id="modal-default-cwd">~</code></div>
-        </div>
+      <div class="modal-field">
+        <label for="session-cwd-input">工作目录</label>
+        <input type="text" id="session-cwd-input" placeholder="例如: /home/user/my-project" autocomplete="off" />
+        <div class="field-hint">默认值: <code id="modal-default-cwd">~</code></div>
+      </div>
 
-        <div class="modal-field">
-          <label for="session-name-input">Name</label>
-          <input type="text" id="session-name-input" placeholder="Auto-filled from directory..." autocomplete="off" />
-        </div>
+      <div class="modal-field">
+        <label for="session-name-input">名称</label>
+        <input type="text" id="session-name-input" placeholder="将根据目录自动填写..." autocomplete="off" />
+      </div>
 
-        <div class="modal-field">
-          <label>Options</label>
-          <div class="modal-checkboxes">
-            <label class="modal-checkbox">
-              <input type="checkbox" id="session-opt-continue" />
-              <span class="checkbox-label">Continue <code>-c</code></span>
-            </label>
-            <label class="modal-checkbox">
-              <input type="checkbox" id="session-opt-skip-perms" checked />
-              <span class="checkbox-label">Skip permissions <code>--dangerously-skip-permissions</code></span>
-            </label>
-            <label class="modal-checkbox">
-              <input type="checkbox" id="session-opt-chrome" />
-              <span class="checkbox-label">Chrome <code>--chrome</code></span>
-            </label>
-          </div>
-        </div>
-
-        <div class="modal-actions">
-          <button type="button" class="modal-btn modal-btn-cancel" id="modal-cancel">✕ Cancel</button>
-          <button type="button" class="modal-btn modal-btn-create" id="modal-create">+ Create</button>
+      <div class="modal-field">
+        <label>选项</label>
+        <div class="modal-checkboxes">
+          <label class="modal-checkbox">
+            <input type="checkbox" id="session-opt-continue" />
+            <span class="checkbox-label">继续会话 <code>-c</code></span>
+          </label>
+          <label class="modal-checkbox">
+            <input type="checkbox" id="session-opt-skip-perms" checked />
+            <span class="checkbox-label">跳过权限确认 <code>--dangerously-skip-permissions</code></span>
+          </label>
+          <label class="modal-checkbox">
+            <input type="checkbox" id="session-opt-chrome" />
+            <span class="checkbox-label">启用浏览器 <code>--chrome</code></span>
+          </label>
         </div>
       </div>
-    </div>
 
-    <!-- Settings Modal -->
-    <div id="settings-modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>Settings</h3>
-        </div>
-
-        <div class="modal-field">
-          <label>Audio</label>
-          <div class="settings-slider-row">
-            <span class="slider-label">Volume</span>
-            <input type="range" id="settings-volume" class="settings-slider" min="0" max="100" value="70" />
-            <span id="settings-volume-value" class="slider-value">70%</span>
-          </div>
-          <div class="settings-checkbox-row">
-            <label class="checkbox-label">
-              <input type="checkbox" id="settings-spatial-audio" checked />
-              <span>Spatial Audio</span>
-            </label>
-            <span class="field-hint-inline">Volume/pan based on zone position</span>
-          </div>
-        </div>
-
-        <div class="modal-field">
-          <label>Privacy</label>
-          <div class="settings-checkbox-row">
-            <label class="checkbox-label">
-              <input type="checkbox" id="settings-streaming-mode" />
-              <span>Streaming Mode</span>
-            </label>
-            <span class="field-hint-inline">Hide username for privacy</span>
-          </div>
-        </div>
-
-        <div class="modal-field">
-          <label>World</label>
-          <div class="settings-slider-row">
-            <span class="slider-label">Grid Size</span>
-            <input type="range" id="settings-grid-size" class="settings-slider" min="5" max="80" value="20" />
-            <span id="settings-grid-size-value" class="slider-value">20</span>
-          </div>
-          <div class="field-hint">Number of hex rings from center. Larger = more space, may impact performance.</div>
-        </div>
-
-        <div class="modal-field">
-          <label>Agent Connection</label>
-          <div class="settings-port-row">
-            <span class="port-label">localhost:</span>
-            <input type="number" id="settings-port" value="4003" min="1" max="65535" />
-            <span id="settings-port-status" class="port-status"></span>
-          </div>
-          <div class="field-hint">Port where the Vibecraft agent is running. Changes require refresh.</div>
-        </div>
-
-        <div class="modal-field">
-          <label>Sessions</label>
-          <div class="settings-actions">
-            <button type="button" class="settings-action-btn" id="settings-refresh-sessions">🔄 Refresh Sessions</button>
-          </div>
-        </div>
-
-        <div class="modal-field">
-          <label>Keyboard Shortcuts</label>
-          <div id="keybind-settings" class="keybind-settings">
-            <!-- Dynamically populated by KeybindSettings.ts -->
-          </div>
-          <div class="field-hint">Click a keybind to change it. Press the new key combination, or Escape to cancel.</div>
-        </div>
-
-        <div class="modal-actions">
-          <button type="button" class="modal-btn modal-btn-cancel" id="settings-close">✕ Close</button>
-        </div>
+      <div class="modal-actions">
+        <button type="button" class="modal-btn modal-btn-cancel" id="modal-cancel">✕ 取消</button>
+        <button type="button" class="modal-btn modal-btn-create" id="modal-create">+ 创建</button>
       </div>
     </div>
+  </div>
 
-    <!-- About Modal -->
-    <div id="about-modal">
-      <div class="modal-content about-modal-content">
-        <div class="modal-header">
-          <h3>Vibecraft</h3>
+  <!-- Settings Modal -->
+  <div id="settings-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>设置 (Settings)</h3>
+      </div>
+
+      <div class="modal-field">
+        <label>音频 (Audio)</label>
+        <div class="settings-slider-row">
+          <span class="slider-label">音量 (Volume)</span>
+          <input type="range" id="settings-volume" class="settings-slider" min="0" max="100" value="70" />
+          <span id="settings-volume-value" class="slider-value">70%</span>
         </div>
-
-        <div class="about-description">
-          <p>Vibecraft is a A 3D visualization app for Claude Code.</p>
-          <p>Watch and manage your claudes in real-time - now featuring hexagonal grids!</p>
-          <p class="about-subtitle">Vibecraft syncs with claude code instances running on your own machine. No files or
-          code are sent to the web server.</p>
-        </div>
-
-        <div class="about-section">
-          <div class="about-section-title">Commands</div>
-          <div class="about-commands">
-            <div class="about-cmd"><code>npx vibecraft</code><span>Start server</span></div>
-            <div class="about-cmd"><code>npx vibecraft doctor</code><span>Diagnose issues</span></div>
-            <div class="about-cmd"><code>npx vibecraft setup</code><span>Reinstall hooks</span></div>
-            <div class="about-cmd"><code>npx vibecraft uninstall</code><span>Remove hooks</span></div>
-          </div>
-        </div>
-
-        <div class="about-section">
-          <div class="about-section-title">Troubleshooting</div>
-          <p class="about-help-text">If a zone gets stuck, Claude Code may be waiting for input or in an unknown state. Attach to the tmux session to see what's happening:</p>
-          <div class="about-commands">
-            <div class="about-cmd"><code>tmux ls</code><span>List sessions</span></div>
-            <div class="about-cmd"><code>tmux attach -t <em>session</em></code><span>Attach to session</span></div>
-          </div>
-        </div>
-
-        <div class="about-section">
-          <div class="about-section-title">Voice Input</div>
-          <p class="about-help-text">To enable voice input, add your Deepgram API key to <code>.env</code>:</p>
-          <div class="about-commands">
-            <div class="about-cmd"><code>DEEPGRAM_API_KEY=your_key_here</code></div>
-          </div>
-        </div>
-
-        <div class="about-footer">
-          <span id="about-version" class="about-version">v0.0.0</span>
-          <span class="about-sep">·</span>
-          <span class="about-credit">Elysian Labs</span>
-        </div>
-
-        <div class="modal-actions">
-          <button type="button" class="modal-btn modal-btn-cancel" id="about-close">Close</button>
+        <div class="settings-checkbox-row">
+          <label class="checkbox-label">
+            <input type="checkbox" id="settings-spatial-audio" checked />
+            <span>空间音频 (Spatial Audio)</span>
+          </label>
+          <span class="field-hint-inline">基于区域位置调整音量和声像</span>
         </div>
       </div>
-    </div>
 
-    <!-- Question Modal (for AskUserQuestion) -->
-    <div id="question-modal">
-      <div class="modal-content question-modal-content">
-        <div class="modal-header">
-          <span class="question-badge" id="question-badge">Question</span>
-          <h3 id="question-header">Claude needs input</h3>
-        </div>
-
-        <div class="question-text" id="question-text"></div>
-
-        <div class="question-options" id="question-options">
-          <!-- Options will be inserted here -->
-        </div>
-
-        <div class="question-other">
-          <label for="question-other-input">Or type your own response:</label>
-          <textarea id="question-other-input" placeholder="Type here..." rows="2"></textarea>
-        </div>
-
-        <div class="modal-actions">
-          <button type="button" class="modal-btn modal-btn-cancel" id="question-skip">Skip</button>
-          <button type="button" class="modal-btn modal-btn-create" id="question-send-other">Send</button>
+      <div class="modal-field">
+        <label>隐私 (Privacy)</label>
+        <div class="settings-checkbox-row">
+          <label class="checkbox-label">
+            <input type="checkbox" id="settings-streaming-mode" />
+            <span>直播模式 (Streaming Mode)</span>
+          </label>
+          <span class="field-hint-inline">为保护隐私隐藏用户名</span>
         </div>
       </div>
-    </div>
 
-    <!-- Permission Modal (for tool permissions) -->
-    <div id="permission-modal">
-      <div class="modal-content permission-modal-content">
-        <div class="modal-header">
-          <span class="permission-badge">Permission Required</span>
-          <h3>Allow <span class="permission-tool" id="permission-tool">Tool</span>?</h3>
+      <div class="modal-field">
+        <label>场景 (World)</label>
+        <div class="settings-slider-row">
+          <span class="slider-label">网格半径 (Grid Size)</span>
+          <input type="range" id="settings-grid-size" class="settings-slider" min="5" max="80" value="20" />
+          <span id="settings-grid-size-value" class="slider-value">20</span>
         </div>
+        <div class="field-hint">从中心向外扩展的六边环数。越大空间越广，但也更吃性能。</div>
+      </div>
 
-        <div class="permission-context" id="permission-context">
-          <!-- Context will be inserted here -->
+      <div class="modal-field">
+        <label>Agent 连接</label>
+        <div class="settings-port-row">
+          <span class="port-label">本地端口 (localhost):</span>
+          <input type="number" id="settings-port" value="4003" min="1" max="65535" />
+          <span id="settings-port-status" class="port-status"></span>
         </div>
+        <div class="field-hint">Vibecraft Agent 运行的端口。更改后需刷新页面。</div>
+      </div>
 
-        <div class="permission-buttons" id="permission-buttons">
-          <!-- Buttons will be generated dynamically based on options -->
+      <div class="modal-field">
+        <label>会话 (Sessions)</label>
+        <div class="settings-actions">
+          <button type="button" class="settings-action-btn" id="settings-refresh-sessions">🔄 刷新所有会话</button>
         </div>
       </div>
-    </div>
 
-    <!-- Zone Info Modal (for session details) -->
-    <div id="zone-info-modal">
-      <div class="modal-content zone-info-modal-content">
-        <div class="modal-header">
-          <h3>Zone Info</h3>
-          <button type="button" class="zone-info-close-btn" id="zone-info-close">&times;</button>
+      <div class="modal-field">
+        <label>快捷键设置 (Keyboard Shortcuts)</label>
+        <div id="keybind-settings" class="keybind-settings">
+          <!-- Dynamically populated by KeybindSettings.ts -->
         </div>
-        <div class="zone-info-body" id="zone-info-content">
-          <!-- Content will be inserted dynamically -->
-        </div>
+        <div class="field-hint">点击任一快捷键进行修改。输入新组合键，或按 Esc 取消。</div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="modal-btn modal-btn-cancel" id="settings-close">✕ 关闭</button>
       </div>
     </div>
+  </div>
 
-    <!-- Text Label Modal (for hex text labels) -->
-    <div id="text-label-modal">
-      <div class="modal-content text-label-modal-content">
-        <div class="modal-header">
-          <h3 id="text-label-title">Add Label</h3>
-        </div>
+  <!-- About Modal -->
+  <div id="about-modal">
+    <div class="modal-content about-modal-content">
+      <div class="modal-header">
+        <h3>关于 Vibecraft</h3>
+      </div>
 
-        <div class="text-label-body">
-          <textarea
-            id="text-label-input"
-            class="text-label-textarea"
-            placeholder="Enter your text here..."
-            maxlength="500"
-            rows="4"
-          ></textarea>
-          <div class="text-label-footer">
-            <span class="text-label-char-count" id="text-label-char-count">0/500</span>
-            <span class="text-label-hint">Enter to save, Shift+Enter for newline</span>
-          </div>
-        </div>
+      <div class="about-description">
+        <p>Vibecraft 是一个为 Claude Code 打造的 3D 可视化应用。</p>
+        <p>实时观察并管理你的 Claude 成员 - 现在支持六边形网格！</p>
+        <p class="about-subtitle">Vibecraft 会同步运行在本地机器上的 Claude Code 实例。任何文件或代码都不会发送到该网页服务器。</p>
+      </div>
 
-        <div class="modal-actions">
-          <button type="button" class="modal-btn modal-btn-cancel" id="text-label-cancel">Cancel</button>
-          <button type="button" class="modal-btn modal-btn-create" id="text-label-save">Save</button>
+      <div class="about-section">
+        <div class="about-section-title">命令行指令 (Commands)</div>
+        <div class="about-commands">
+          <div class="about-cmd"><code>npx vibecraft</code><span>启动服务器</span></div>
+          <div class="about-cmd"><code>npx vibecraft doctor</code><span>诊断问题</span></div>
+          <div class="about-cmd"><code>npx vibecraft setup</code><span>重新安装钩子</span></div>
+          <div class="about-cmd"><code>npx vibecraft uninstall</code><span>移除钩子</span></div>
         </div>
       </div>
-    </div>
 
-    <!-- Zone Timeout Modal (shown when zone creation takes too long) -->
-    <div id="zone-timeout-modal">
-      <div class="modal-content zone-timeout-content">
-        <div class="modal-header">
-          <h3>Zone Not Responding</h3>
-        </div>
-        <p class="zone-timeout-text">
-          The zone is taking longer than expected to start. Claude Code may be stuck or waiting for input.
-        </p>
-        <div class="about-section">
-          <div class="about-section-title">Troubleshooting</div>
-          <div class="about-commands">
-            <div class="about-cmd"><code>tmux ls</code><span>List sessions</span></div>
-            <div class="about-cmd"><code>tmux attach -t <em>session</em></code><span>See what's happening</span></div>
-          </div>
-        </div>
-        <p class="zone-timeout-hint">Also ensure your Claude Code is up to date.</p>
-        <div class="modal-actions">
-          <button type="button" class="modal-btn modal-btn-cancel" id="zone-timeout-close">Close</button>
+      <div class="about-section">
+        <div class="about-section-title">故障排除 (Troubleshooting)</div>
+        <p class="about-help-text">如果某个区域卡住，可能是 Claude Code 正在等待输入或处于未知状态。
+          请连接 tmux 会话查看详情：</p>
+        <div class="about-commands">
+          <div class="about-cmd"><code>tmux ls</code><span>列出所有会话</span></div>
+          <div class="about-cmd"><code>tmux attach -t <em>session</em></code><span>连接到指定会话</span></div>
         </div>
       </div>
-    </div>
 
-    <!-- Offline Banner (shown when user tries to interact while disconnected) -->
-    <div id="offline-banner" class="offline-banner hidden">
-      <span>Not connected to local server</span>
-      <button id="offline-banner-dismiss">×</button>
-    </div>
-
-    <!-- Not Connected Overlay -->
-    <div id="not-connected-overlay">
-      <div class="not-connected-content">
-        <h2>Vibecraft!</h2>
-        <p class="not-connected-description">
-          Vibecraft is a 3D app to watch and manage Claude Code instances.
-        </p>
-        <p class="not-connected-privacy">
-          Vibecraft syncs with CC instances running on your local machine. Vibecraft is an interface - no files or code
-          are sent to this server.
-        </p>
-        <div class="not-connected-setup">
-          <p class="not-connected-setup-label">Get started:</p>
-          <div class="not-connected-code">npx vibecraft setup && npx vibecraft</div>
-        </div>
-        <div class="not-connected-actions">
-          <button class="not-connected-btn not-connected-btn-retry" id="retry-connection">↻ Reconnect</button>
-          <button class="not-connected-btn not-connected-btn-explore" id="explore-offline">👀 Explore</button>
+      <div class="about-section">
+        <div class="about-section-title">语音输入 (Voice Input)</div>
+        <p class="about-help-text">要启用语音输入，请将 Deepgram API key 添加到 <code>.env</code> 文件中：</p>
+        <div class="about-commands">
+          <div class="about-cmd"><code>DEEPGRAM_API_KEY=your_key_here</code></div>
         </div>
       </div>
+
+      <div class="about-footer">
+        <span id="about-version" class="about-version">v0.0.0</span>
+        <span class="about-sep">·</span>
+        <span class="about-credit">Elysian Labs</span>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="modal-btn modal-btn-cancel" id="about-close">关闭</button>
+      </div>
     </div>
+  </div>
 
-    <!-- Toast notifications -->
-    <div id="toast-container"></div>
+  <!-- Question Modal (for AskUserQuestion) -->
+  <div id="question-modal">
+    <div class="modal-content question-modal-content">
+      <div class="modal-header">
+        <span class="question-badge" id="question-badge">提问 (Question)</span>
+        <h3 id="question-header">Claude 需要输入</h3>
+      </div>
 
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+      <div class="question-text" id="question-text"></div>
+
+      <div class="question-options" id="question-options">
+        <!-- Options will be inserted here -->
+      </div>
+
+      <div class="question-other">
+        <label for="question-other-input">或者输入你的回复：</label>
+        <textarea id="question-other-input" placeholder="在此输入..." rows="2"></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="modal-btn modal-btn-cancel" id="question-skip">跳过</button>
+        <button type="button" class="modal-btn modal-btn-create" id="question-send-other">发送</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Permission Modal (for tool permissions) -->
+  <div id="permission-modal">
+    <div class="modal-content permission-modal-content">
+      <div class="modal-header">
+        <span class="permission-badge">需要权限确认</span>
+        <h3>允许调用 <span class="permission-tool" id="permission-tool">工具</span> 吗？</h3>
+      </div>
+
+      <div class="permission-context" id="permission-context">
+        <!-- Context will be inserted here -->
+      </div>
+
+      <div class="permission-buttons" id="permission-buttons">
+        <!-- Buttons will be generated dynamically based on options -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Zone Info Modal (for session details) -->
+  <div id="zone-info-modal">
+    <div class="modal-content zone-info-modal-content">
+      <div class="modal-header">
+        <h3>区域信息 (Zone Info)</h3>
+        <button type="button" class="zone-info-close-btn" id="zone-info-close">&times;</button>
+      </div>
+      <div class="zone-info-body" id="zone-info-content">
+        <!-- Content will be inserted dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Text Label Modal (for hex text labels) -->
+  <div id="text-label-modal">
+    <div class="modal-content text-label-modal-content">
+      <div class="modal-header">
+        <h3 id="text-label-title">添加标签</h3>
+      </div>
+
+      <div class="text-label-body">
+        <textarea id="text-label-input" class="text-label-textarea" placeholder="在此输入文本..." maxlength="500"
+          rows="4"></textarea>
+        <div class="text-label-footer">
+          <span class="text-label-char-count" id="text-label-char-count">0/500</span>
+          <span class="text-label-hint">按 Enter 保存，Shift+Enter 换行</span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="modal-btn modal-btn-cancel" id="text-label-cancel">取消</button>
+        <button type="button" class="modal-btn modal-btn-create" id="text-label-save">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Zone Timeout Modal (shown when zone creation takes too long) -->
+  <div id="zone-timeout-modal">
+    <div class="modal-content zone-timeout-content">
+      <div class="modal-header">
+        <h3>区域无响应</h3>
+      </div>
+      <p class="zone-timeout-text">
+        该区域启动时间比预期长。Claude Code 可能被卡住或正在等待输入。
+      </p>
+      <div class="about-section">
+        <div class="about-section-title">故障排除 (Troubleshooting)</div>
+        <div class="about-commands">
+          <div class="about-cmd"><code>tmux ls</code><span>列出所有会话</span></div>
+          <div class="about-cmd"><code>tmux attach -t <em>session</em></code><span>查看详情</span></div>
+        </div>
+      </div>
+      <p class="zone-timeout-hint">同时请确保你的 Claude Code 为最新版本。</p>
+      <div class="modal-actions">
+        <button type="button" class="modal-btn modal-btn-cancel" id="zone-timeout-close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Offline Banner (shown when user tries to interact while disconnected) -->
+  <div id="offline-banner" class="offline-banner hidden">
+    <span>未连接到本地服务器</span>
+    <button id="offline-banner-dismiss">×</button>
+  </div>
+
+  <!-- Not Connected Overlay -->
+  <div id="not-connected-overlay">
+    <div class="not-connected-content">
+      <h2>Vibecraft!</h2>
+      <p class="not-connected-description">
+        Vibecraft 是一个监控和管理 Claude Code 实例的 3D 应用。
+      </p>
+      <p class="not-connected-privacy">
+        Vibecraft 会同步运行在本地机器上的 CC 实例。Vibecraft 仅作为交互界面 - 任何文件或代码都不会发送到该服务器。
+      </p>
+      <div class="not-connected-setup">
+        <p class="not-connected-setup-label">开始使用:</p>
+        <div class="not-connected-code">npx vibecraft setup && npx vibecraft</div>
+      </div>
+      <div class="not-connected-actions">
+        <button class="not-connected-btn not-connected-btn-retry" id="retry-connection">↻ 重新连接</button>
+        <button class="not-connected-btn not-connected-btn-explore" id="explore-offline">👀 仅浏览模式</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notifications -->
+  <div id="toast-container"></div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
 </html>
