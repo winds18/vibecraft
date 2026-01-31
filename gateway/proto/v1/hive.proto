@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package v1;
+
+option go_package = "github.com/winds18/vibecraft/gateway/proto/v1;hivev1";
+
+// NodeController defines the sync-control interface between Mac (Manager) and Linux (Core).
+// Transport: gRPC + mTLS
+service NodeController {
+    // Ping checks readiness and latency
+    rpc Ping(PingRequest) returns (PingResponse);
+
+    // DeployAgent instructs the node to spawn a new agent container
+    rpc DeployAgent(DeployRequest) returns (DeployResponse);
+
+    // StopAgent halts an agent execution
+    rpc StopAgent(StopRequest) returns (StopResponse);
+
+    // GetNodeState retrieves full snapshot of the node (resources, running pods)
+    rpc GetNodeState(NodeStateRequest) returns (NodeStateResponse);
+}
+
+message PingRequest {
+    string source_id = 1; // e.g. "mac-manager-01"
+    int64 timestamp = 2;
+}
+
+message PingResponse {
+    string node_id = 1;
+    string status = 2;   // "ready", "draining", "busy"
+    int64 server_time = 3;
+}
+
+message DeployRequest {
+    string request_id = 1;
+    AgentSpec spec = 2;
+}
+
+message AgentSpec {
+    string agent_id = 1;      // e.g. "agent-alpha-01"
+    string role = 2;          // "coder", "architect", "ceo"
+    string model_tier = 3;    // "tier-1", "tier-2"
+    repeated string env_vars = 4; // "KEY=VALUE"
+    
+    // Resource constraints
+    ResourceLimit resources = 5;
+    
+    // Security
+    bool network_enabled = 6;
+}
+
+message ResourceLimit {
+    float cpu = 1;    // Cores
+    int64 memory = 2; // MB
+}
+
+message DeployResponse {
+    string container_id = 1;
+    string status = 2; // "starting", "failed"
+    string error_message = 3;
+}
+
+message StopRequest {
+    string agent_id = 1;
+    bool force = 2;
+}
+
+message StopResponse {
+    bool success = 1;
+}
+
+message NodeStateRequest {}
+
+message NodeStateResponse {
+    string node_id = 1;
+    float cpu_usage = 2;
+    float ram_usage = 3;
+    repeated AgentSummary active_agents = 4;
+}
+
+message AgentSummary {
+    string agent_id = 1;
+    string status = 2;
+    int64 uptime_seconds = 3;
+}
