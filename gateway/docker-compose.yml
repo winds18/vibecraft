@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # --- Message Bus (JetStream) ---
+  nats:
+    image: nats:2.10-alpine
+    container_name: hive-nats
+    command: "-js -m 8222"
+    ports:
+      - "4222:4222" # Client Port
+      - "8222:8222" # HTTP Management
+    volumes:
+      - nats_data:/data
+    networks:
+      - hive-net
+    restart: always
+
+  # --- Storage & Audit (ClickHouse) ---
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.3-alpine
+    container_name: hive-clickhouse
+    ports:
+      - "8123:8123" # HTTP
+      - "9000:9000" # Native
+    volumes:
+      - ch_data:/var/lib/clickhouse
+      - ./config/clickhouse:/etc/clickhouse-server/config.d
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    networks:
+      - hive-net
+    restart: always
+
+  # --- Consensus (Redlock) ---
+  redis:
+    image: redis:7.2-alpine
+    container_name: hive-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - hive-net
+    restart: always
+
+  # --- Log Aggregator (Vector) ---
+  vector:
+    image: timberio/vector:0.38.0-alpine
+    container_name: hive-vector
+    ports:
+      - "8686:8686" # API
+    volumes:
+      - ./config/vector.toml:/etc/vector/vector.toml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      VECTOR_CONFIG: /etc/vector/vector.toml
+    networks:
+      - hive-net
+    depends_on:
+      - nats
+      - clickhouse
+    restart: always
+
+networks:
+  hive-net:
+    driver: bridge
+
+volumes:
+  nats_data:
+  ch_data:
+  redis_data:

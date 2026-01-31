@@ -1,0 +1,31 @@
+[api]
+enabled = true
+address = "0.0.0.0:8686"
+
+# --- Sources ---
+[sources.hive_nats]
+type = "nats"
+url = "nats://nats:4222"
+queue = "vector-group"
+subjects = ["logs.>"]
+
+# --- Transforms ---
+[transforms.parse_json]
+type = "remap"
+inputs = ["hive_nats"]
+source = '''
+  . = parse_json!(.message)
+'''
+
+# --- Sinks ---
+[sinks.console_debug]
+type = "console"
+inputs = ["parse_json"]
+encoding.codec = "json"
+
+# [sinks.clickhouse]
+# type = "clickhouse"
+# inputs = ["parse_json"]
+# endpoint = "http://clickhouse:8123"
+# table = "app_logs"
+# encoding.only_fields = ["timestamp", "message", "level", "agent_id"]
